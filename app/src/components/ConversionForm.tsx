@@ -21,7 +21,7 @@ export default function ConversionForm({ onSubmit, loading = false, plan = 'FREE
     const [quality, setQuality] = useState('standard');
     const [format, setFormat] = useState('glb');
     const [textured, setTextured] = useState(true);
-    const [aiProvider, setAiProvider] = useState('meshy');
+    const [aiProvider, setAiProvider] = useState('fal-meshy-v6');
 
     const qualityOptions = [
         { value: 'draft', label: 'Draft', desc: 'Fast, lower detail', plans: ['FREE', 'STARTER', 'PRO', 'ENTERPRISE'] },
@@ -125,10 +125,16 @@ export default function ConversionForm({ onSubmit, loading = false, plan = 'FREE
                             onChange={(e) => setAiProvider(e.target.value)}
                             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500"
                         >
-                            <option value="meshy">Meshy AI</option>
-                            <option value="triposr">TripoSR (Stability AI)</option>
-                            <option value="openai">OpenAI Shap-E</option>
-                            <option value="kie">Kie.ai (Enhanced Preprocessing)</option>
+                            <optgroup label="fal.ai (Recommended)">
+                                <option value="fal-meshy-v6">Meshy v6 — Production quality, PBR textures</option>
+                                <option value="fal-triposr">TripoSR — Fast, lightweight</option>
+                                <option value="fal-hunyuan-3d">Hunyuan 3D — Text-guided generation</option>
+                            </optgroup>
+                            <optgroup label="Direct Providers">
+                                <option value="meshy">Meshy AI (Direct)</option>
+                                <option value="triposr">TripoSR (Stability AI)</option>
+                                <option value="openai">OpenAI Shap-E</option>
+                            </optgroup>
                         </select>
                     </div>
                 </div>
