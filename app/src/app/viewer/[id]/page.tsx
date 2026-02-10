@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Share2, Download, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Share2, Download, Copy, Check, Pencil, Eye } from 'lucide-react';
 import Link from 'next/link';
 import PlayCanvasViewer from '@/components/PlayCanvasViewer';
 
@@ -28,6 +28,8 @@ export default function ViewerPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [transform, setTransform] = useState<{ pos: number[]; rot: number[]; scl: number[] } | null>(null);
 
     useEffect(() => {
         async function loadModel() {
@@ -97,6 +99,17 @@ export default function ViewerPage() {
 
                 <div className="flex items-center gap-3">
                     <button
+                        onClick={() => setEditMode(!editMode)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+                            editMode
+                                ? 'bg-brand-600 text-white'
+                                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                        }`}
+                    >
+                        {editMode ? <Eye size={16} /> : <Pencil size={16} />}
+                        {editMode ? 'View Mode' : 'Edit Mode'}
+                    </button>
+                    <button
                         onClick={copyShareLink}
                         className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm transition"
                     >
@@ -120,6 +133,9 @@ export default function ViewerPage() {
                         modelUrl={model.modelUrl}
                         format={model.format}
                         className="aspect-[16/10] w-full"
+                        editable={editMode}
+                        autoRotate={!editMode}
+                        onTransform={(pos, rot, scl) => setTransform({ pos, rot, scl })}
                     />
                 </div>
 
@@ -166,6 +182,39 @@ export default function ViewerPage() {
                             />
                         </div>
                     </div>
+
+                    {/* Transform info (edit mode) */}
+                    {editMode && transform && (
+                        <div>
+                            <h3 className="text-sm font-medium text-gray-400 mb-3">Transform</h3>
+                            <div className="space-y-2 text-xs font-mono">
+                                <div className="p-2 bg-gray-800 rounded-lg">
+                                    <span className="text-gray-500">Position</span>
+                                    <div className="text-white mt-1">
+                                        X: {transform.pos[0].toFixed(3)} &nbsp;
+                                        Y: {transform.pos[1].toFixed(3)} &nbsp;
+                                        Z: {transform.pos[2].toFixed(3)}
+                                    </div>
+                                </div>
+                                <div className="p-2 bg-gray-800 rounded-lg">
+                                    <span className="text-gray-500">Rotation</span>
+                                    <div className="text-white mt-1">
+                                        X: {transform.rot[0].toFixed(1)} &nbsp;
+                                        Y: {transform.rot[1].toFixed(1)} &nbsp;
+                                        Z: {transform.rot[2].toFixed(1)}
+                                    </div>
+                                </div>
+                                <div className="p-2 bg-gray-800 rounded-lg">
+                                    <span className="text-gray-500">Scale</span>
+                                    <div className="text-white mt-1">
+                                        X: {transform.scl[0].toFixed(3)} &nbsp;
+                                        Y: {transform.scl[1].toFixed(3)} &nbsp;
+                                        Z: {transform.scl[2].toFixed(3)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Copy embed code */}
                     {model.isPublic && (

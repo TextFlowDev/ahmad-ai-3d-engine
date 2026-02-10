@@ -128,6 +128,7 @@ export default function ConversionForm({ onSubmit, loading = false, plan = 'FREE
                             <option value="meshy">Meshy AI</option>
                             <option value="triposr">TripoSR (Stability AI)</option>
                             <option value="openai">OpenAI Shap-E</option>
+                            <option value="kie">Kie.ai (Enhanced Preprocessing)</option>
                         </select>
                     </div>
                 </div>

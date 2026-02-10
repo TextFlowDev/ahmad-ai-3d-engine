@@ -2,16 +2,19 @@ import { AIProvider } from './base';
 import { MeshyProvider } from './meshy';
 import { TripoSRProvider } from './triposr';
 import { OpenAIProvider } from './stability';
+import { KieAIProvider } from './kie';
 
 export { AIProvider } from './base';
 export { MeshyProvider } from './meshy';
 export { TripoSRProvider } from './triposr';
 export { OpenAIProvider } from './stability';
+export { KieAIProvider } from './kie';
 
 const providers: Record<string, () => AIProvider> = {
     meshy: () => new MeshyProvider(),
     triposr: () => new TripoSRProvider(),
-    openai: () => new OpenAIProvider()
+    openai: () => new OpenAIProvider(),
+    kie: () => new KieAIProvider()
 };
 
 /**
