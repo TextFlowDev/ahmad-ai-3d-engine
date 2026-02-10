@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── NextAuth Models ────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── User & Subscription ────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Stripe
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  stripePriceId        String?
+  stripeCurrentPeriodEnd DateTime?
+
+  // Subscription tier
+  plan Plan @default(FREE)
+
+  // Usage tracking
+  monthlyConversions    Int @default(0)
+  monthlyConversionReset DateTime @default(now())
+
+  accounts     Account[]
+  sessions     Session[]
+  jobs         ConversionJob[]
+  models       Model3D[]
+}
+
+enum Plan {
+  FREE
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+// ─── Conversion Jobs ────────────────────────────────────────
+
+model ConversionJob {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Input
+  inputImageUrl  String
+  inputFileName  String
+  inputFileType  String // "raster" | "vector" | "drawing"
+
+  // Processing
+  status    JobStatus @default(PENDING)
+  progress  Int       @default(0) // 0-100
+  aiProvider String   // "meshy" | "triposr" | "stability"
+  errorMessage String?
+
+  // Output
+  modelId String? @unique
+  model   Model3D? @relation
+
+  // Options
+  quality    String @default("standard") // "draft" | "standard" | "high"
+  format     String @default("glb")      // "glb" | "gltf" | "obj" | "fbx"
+  textured   Boolean @default(true)
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// ─── 3D Models ──────────────────────────────────────────────
+
+model Model3D {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+
+  // Files
+  modelUrl    String  // S3 URL to .glb/.gltf
+  thumbnailUrl String?
+  originalImageUrl String
+
+  // Metadata
+  format     String // "glb" | "gltf" | "obj" | "fbx"
+  fileSizeBytes Int
+  vertexCount   Int?
+  faceCount     Int?
+  textured      Boolean @default(true)
+
+  // Source
+  jobId String?  @unique
+  job   ConversionJob? @relation(fields: [jobId], references: [id])
+
+  // Sharing
+  isPublic Boolean @default(false)
+  shareToken String? @unique
+
+  @@index([userId])
+  @@index([shareToken])
+}
