@@ -2,50 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-    --background: #09090b;
-    --foreground: #fafafa;
+@layer base {
+    :root {
+        /* ─── Design Tokens (editable from /styleguide) ─── */
+        --background: 240 10% 3.9%;
+        --foreground: 0 0% 98%;
+        --card: 240 10% 5.5%;
+        --card-foreground: 0 0% 98%;
+        --popover: 240 10% 5.5%;
+        --popover-foreground: 0 0% 98%;
+        --primary: 227 71% 63%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 240 5% 15%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 240 5% 15%;
+        --muted-foreground: 240 5% 64%;
+        --accent: 240 5% 15%;
+        --accent-foreground: 0 0% 98%;
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 240 6% 17%;
+        --input: 240 6% 17%;
+        --ring: 227 71% 63%;
+        --radius: 0.75rem;
+
+        /* Brand color */
+        --brand: 227 71% 63%;
+        --brand-foreground: 0 0% 100%;
+
+        /* Font families */
+        --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+        --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground antialiased;
+        font-family: var(--font-sans);
+    }
 }
 
-body {
-    color: var(--foreground);
-    background: var(--background);
-    font-family: system-ui, -apple-system, sans-serif;
-}
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: hsl(var(--background)); }
+::-webkit-scrollbar-thumb { background: hsl(var(--muted)); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: #1a1a1a;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #333;
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #444;
-}
-
-/* Smooth animations */
-@keyframes fade-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fade-in {
-    animation: fade-in 0.5s ease-out;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-.animate-float {
-    animation: float 6s ease-in-out infinite;
+/* ─── Mobile-first focus ring ─── */
+@layer base {
+    *:focus-visible {
+        @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+    }
 }

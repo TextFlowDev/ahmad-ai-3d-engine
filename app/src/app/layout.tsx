@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en" className="dark">
-            <body className="min-h-screen bg-gray-950 text-white antialiased">
+            <body className="min-h-screen bg-background text-foreground antialiased">
                 <Providers>
                     <Navbar />
                     <main>{children}</main>

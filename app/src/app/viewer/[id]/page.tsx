@@ -5,6 +5,9 @@ import { useParams } from 'next/navigation';
 import { ArrowLeft, Share2, Download, Copy, Check, Pencil, Eye } from 'lucide-react';
 import Link from 'next/link';
 import PlayCanvasViewer from '@/components/PlayCanvasViewer';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 interface ModelData {
     id: string;
@@ -58,81 +61,73 @@ export default function ViewerPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[80vh]">
-                <div className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
         );
     }
 
     if (error || !model) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-                <h1 className="text-2xl font-bold text-red-400 mb-2">Model not found</h1>
-                <p className="text-gray-400 mb-6">{error || 'This model may have been deleted or is not accessible.'}</p>
-                <Link
-                    href="/dashboard"
-                    className="px-6 py-3 bg-brand-600 hover:bg-brand-500 rounded-xl text-white transition"
-                >
-                    Back to Dashboard
-                </Link>
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+                <h1 className="text-2xl font-bold text-destructive mb-2">Model not found</h1>
+                <p className="text-muted-foreground mb-6">{error || 'This model may have been deleted or is not accessible.'}</p>
+                <Button asChild variant="brand">
+                    <Link href="/dashboard">Back to Dashboard</Link>
+                </Button>
             </div>
         );
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                    <Link
-                        href="/dashboard"
-                        className="p-2 hover:bg-gray-800 rounded-lg transition"
-                    >
-                        <ArrowLeft size={20} />
-                    </Link>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-6">
+                <div className="flex items-center gap-3 sm:gap-4">
+                    <Button asChild variant="ghost" size="icon">
+                        <Link href="/dashboard">
+                            <ArrowLeft size={20} />
+                        </Link>
+                    </Button>
                     <div>
-                        <h1 className="text-2xl font-bold">{model.name}</h1>
+                        <h1 className="text-xl sm:text-2xl font-bold">{model.name}</h1>
                         {model.description && (
-                            <p className="text-sm text-gray-400">{model.description}</p>
+                            <p className="text-sm text-muted-foreground">{model.description}</p>
                         )}
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <button
+                <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                    <Button
                         onClick={() => setEditMode(!editMode)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
-                            editMode
-                                ? 'bg-brand-600 text-white'
-                                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-                        }`}
+                        variant={editMode ? 'brand' : 'secondary'}
+                        size="sm"
+                        className="flex-1 sm:flex-initial"
                     >
-                        {editMode ? <Eye size={16} /> : <Pencil size={16} />}
-                        {editMode ? 'View Mode' : 'Edit Mode'}
-                    </button>
-                    <button
-                        onClick={copyShareLink}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm transition"
-                    >
-                        {copied ? <Check size={16} /> : <Share2 size={16} />}
-                        {copied ? 'Copied!' : 'Share'}
-                    </button>
-                    <a
-                        href={model.modelUrl}
-                        download
-                        className="flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-500 rounded-lg text-sm font-medium transition"
-                    >
-                        <Download size={16} /> Download {model.format.toUpperCase()}
-                    </a>
+                        {editMode ? <Eye size={16} className="mr-1.5" /> : <Pencil size={16} className="mr-1.5" />}
+                        <span className="hidden sm:inline">{editMode ? 'View Mode' : 'Edit Mode'}</span>
+                        <span className="sm:hidden">{editMode ? 'View' : 'Edit'}</span>
+                    </Button>
+                    <Button onClick={copyShareLink} variant="outline" size="sm">
+                        {copied ? <Check size={16} className="mr-1.5" /> : <Share2 size={16} className="mr-1.5" />}
+                        <span className="hidden sm:inline">{copied ? 'Copied!' : 'Share'}</span>
+                    </Button>
+                    <Button asChild variant="brand" size="sm">
+                        <a href={model.modelUrl} download>
+                            <Download size={16} className="mr-1.5" />
+                            <span className="hidden sm:inline">Download {model.format.toUpperCase()}</span>
+                            <span className="sm:hidden">{model.format.toUpperCase()}</span>
+                        </a>
+                    </Button>
                 </div>
             </div>
 
             {/* Viewer */}
-            <div className="grid lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 <div className="lg:col-span-2">
                     <PlayCanvasViewer
                         modelUrl={model.modelUrl}
                         format={model.format}
-                        className="aspect-[16/10] w-full"
+                        className="aspect-[4/3] sm:aspect-[16/10] w-full"
                         editable={editMode}
                         autoRotate={!editMode}
                         onTransform={(pos, rot, scl) => setTransform({ pos, rot, scl })}
@@ -140,102 +135,99 @@ export default function ViewerPage() {
                 </div>
 
                 {/* Sidebar info */}
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                     {/* Original image */}
-                    <div>
-                        <h3 className="text-sm font-medium text-gray-400 mb-3">Original Image</h3>
-                        <img
-                            src={model.originalImageUrl}
-                            alt="Original"
-                            className="w-full rounded-xl bg-gray-800 object-contain max-h-48"
-                        />
-                    </div>
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm text-muted-foreground">Original Image</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <img
+                                src={model.originalImageUrl}
+                                alt="Original"
+                                className="w-full rounded-lg bg-muted object-contain max-h-48"
+                            />
+                        </CardContent>
+                    </Card>
 
                     {/* Model details */}
-                    <div>
-                        <h3 className="text-sm font-medium text-gray-400 mb-3">Model Details</h3>
-                        <div className="space-y-2">
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm text-muted-foreground">Model Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-0">
                             <DetailRow label="Format" value={model.format.toUpperCase()} />
-                            <DetailRow
-                                label="File Size"
-                                value={formatBytes(model.fileSizeBytes)}
-                            />
+                            <DetailRow label="File Size" value={formatBytes(model.fileSizeBytes)} />
                             {model.vertexCount && (
-                                <DetailRow
-                                    label="Vertices"
-                                    value={model.vertexCount.toLocaleString()}
-                                />
+                                <DetailRow label="Vertices" value={model.vertexCount.toLocaleString()} />
                             )}
                             {model.faceCount && (
-                                <DetailRow
-                                    label="Faces"
-                                    value={model.faceCount.toLocaleString()}
-                                />
+                                <DetailRow label="Faces" value={model.faceCount.toLocaleString()} />
                             )}
-                            <DetailRow
-                                label="Created"
-                                value={new Date(model.createdAt).toLocaleDateString()}
-                            />
-                            <DetailRow
-                                label="Visibility"
-                                value={model.isPublic ? 'Public' : 'Private'}
-                            />
-                        </div>
-                    </div>
+                            <DetailRow label="Created" value={new Date(model.createdAt).toLocaleDateString()} />
+                            <DetailRow label="Visibility" value={model.isPublic ? 'Public' : 'Private'} />
+                        </CardContent>
+                    </Card>
 
                     {/* Transform info (edit mode) */}
                     {editMode && transform && (
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-400 mb-3">Transform</h3>
-                            <div className="space-y-2 text-xs font-mono">
-                                <div className="p-2 bg-gray-800 rounded-lg">
-                                    <span className="text-gray-500">Position</span>
-                                    <div className="text-white mt-1">
+                        <Card>
+                            <CardHeader className="pb-3">
+                                <CardTitle className="text-sm text-muted-foreground">Transform</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2 text-xs font-mono">
+                                <div className="p-2 bg-muted rounded-lg">
+                                    <span className="text-muted-foreground">Position</span>
+                                    <div className="text-foreground mt-1">
                                         X: {transform.pos[0].toFixed(3)} &nbsp;
                                         Y: {transform.pos[1].toFixed(3)} &nbsp;
                                         Z: {transform.pos[2].toFixed(3)}
                                     </div>
                                 </div>
-                                <div className="p-2 bg-gray-800 rounded-lg">
-                                    <span className="text-gray-500">Rotation</span>
-                                    <div className="text-white mt-1">
+                                <div className="p-2 bg-muted rounded-lg">
+                                    <span className="text-muted-foreground">Rotation</span>
+                                    <div className="text-foreground mt-1">
                                         X: {transform.rot[0].toFixed(1)} &nbsp;
                                         Y: {transform.rot[1].toFixed(1)} &nbsp;
                                         Z: {transform.rot[2].toFixed(1)}
                                     </div>
                                 </div>
-                                <div className="p-2 bg-gray-800 rounded-lg">
-                                    <span className="text-gray-500">Scale</span>
-                                    <div className="text-white mt-1">
+                                <div className="p-2 bg-muted rounded-lg">
+                                    <span className="text-muted-foreground">Scale</span>
+                                    <div className="text-foreground mt-1">
                                         X: {transform.scl[0].toFixed(3)} &nbsp;
                                         Y: {transform.scl[1].toFixed(3)} &nbsp;
                                         Z: {transform.scl[2].toFixed(3)}
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
                     )}
 
                     {/* Copy embed code */}
                     {model.isPublic && (
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-400 mb-3">Embed</h3>
-                            <div className="p-3 bg-gray-800 rounded-lg">
-                                <code className="text-xs text-gray-300 break-all">
-                                    {`<iframe src="${typeof window !== 'undefined' ? window.location.origin : ''}/viewer/${model.id}?embed=true" width="640" height="480"></iframe>`}
-                                </code>
-                                <button
-                                    onClick={() => {
-                                        navigator.clipboard.writeText(
-                                            `<iframe src="${window.location.origin}/viewer/${model.id}?embed=true" width="640" height="480"></iframe>`
-                                        );
-                                    }}
-                                    className="mt-2 flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300"
-                                >
-                                    <Copy size={12} /> Copy embed code
-                                </button>
-                            </div>
-                        </div>
+                        <Card>
+                            <CardHeader className="pb-3">
+                                <CardTitle className="text-sm text-muted-foreground">Embed</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="p-3 bg-muted rounded-lg">
+                                    <code className="text-xs text-foreground/80 break-all">
+                                        {`<iframe src="${typeof window !== 'undefined' ? window.location.origin : ''}/viewer/${model.id}?embed=true" width="640" height="480"></iframe>`}
+                                    </code>
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(
+                                                `<iframe src="${window.location.origin}/viewer/${model.id}?embed=true" width="640" height="480"></iframe>`
+                                            );
+                                        }}
+                                        className="mt-2 flex items-center gap-1 text-xs text-primary hover:text-primary/80"
+                                    >
+                                        <Copy size={12} /> Copy embed code
+                                    </button>
+                                </div>
+                            </CardContent>
+                        </Card>
                     )}
                 </div>
             </div>
@@ -245,9 +237,9 @@ export default function ViewerPage() {
 
 function DetailRow({ label, value }: { label: string; value: string }) {
     return (
-        <div className="flex items-center justify-between py-2 border-b border-gray-800">
-            <span className="text-sm text-gray-400">{label}</span>
-            <span className="text-sm text-white font-medium">{value}</span>
+        <div className="flex items-center justify-between py-2 border-b border-border last:border-0">
+            <span className="text-sm text-muted-foreground">{label}</span>
+            <span className="text-sm text-foreground font-medium">{value}</span>
         </div>
     );
 }

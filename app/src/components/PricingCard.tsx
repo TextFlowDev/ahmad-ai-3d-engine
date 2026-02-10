@@ -1,6 +1,10 @@
 'use client';
 
 import { Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface PricingCardProps {
     name: string;
@@ -24,51 +28,55 @@ export default function PricingCard({
     loading = false
 }: PricingCardProps) {
     return (
-        <div
-            className={`relative rounded-2xl p-8 border transition ${
-                isPopular
-                    ? 'border-brand-500 bg-brand-500/5 shadow-lg shadow-brand-500/10'
-                    : 'border-gray-700 bg-gray-800/50'
-            }`}
+        <Card
+            className={cn(
+                'relative',
+                isPopular && 'border-primary shadow-lg shadow-primary/10'
+            )}
         >
             {isPopular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-brand-600 rounded-full text-xs font-semibold text-white">
-                    Most Popular
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <Badge variant="brand">Most Popular</Badge>
                 </div>
             )}
 
-            <div className="mb-6">
-                <h3 className="text-xl font-bold text-white">{name}</h3>
-                <p className="text-sm text-gray-400 mt-1">{description}</p>
-            </div>
+            <CardHeader>
+                <h3 className="text-xl font-bold text-foreground">{name}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{description}</p>
+            </CardHeader>
 
-            <div className="mb-8">
-                <span className="text-4xl font-bold text-white">${price}</span>
-                {price > 0 && <span className="text-gray-400 ml-1">/month</span>}
-            </div>
+            <CardContent>
+                <div className="mb-6">
+                    <span className="text-4xl font-bold text-foreground">${price}</span>
+                    {price > 0 && <span className="text-muted-foreground ml-1">/month</span>}
+                </div>
 
-            <ul className="space-y-3 mb-8">
-                {features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
-                        <Check className="w-4 h-4 text-brand-400 mt-0.5 shrink-0" />
-                        {feature}
-                    </li>
-                ))}
-            </ul>
+                <ul className="space-y-3">
+                    {features.map((feature, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
+                            <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                            {feature}
+                        </li>
+                    ))}
+                </ul>
+            </CardContent>
 
-            <button
-                onClick={onSelect}
-                disabled={isCurrentPlan || loading}
-                className={`w-full py-3 rounded-xl font-medium transition ${
-                    isCurrentPlan
-                        ? 'bg-gray-700 text-gray-400 cursor-default'
-                        : isPopular
-                            ? 'bg-brand-600 hover:bg-brand-500 text-white'
-                            : 'bg-gray-700 hover:bg-gray-600 text-white'
-                } ${loading ? 'opacity-60' : ''}`}
-            >
-                {isCurrentPlan ? 'Current Plan' : loading ? 'Redirecting...' : price === 0 ? 'Get Started' : 'Subscribe'}
-            </button>
-        </div>
+            <CardFooter>
+                <Button
+                    onClick={onSelect}
+                    disabled={isCurrentPlan || loading}
+                    variant={isCurrentPlan ? 'secondary' : isPopular ? 'brand' : 'outline'}
+                    className="w-full"
+                >
+                    {isCurrentPlan
+                        ? 'Current Plan'
+                        : loading
+                            ? 'Redirecting...'
+                            : price === 0
+                                ? 'Get Started'
+                                : 'Subscribe'}
+                </Button>
+            </CardFooter>
+        </Card>
     );
 }

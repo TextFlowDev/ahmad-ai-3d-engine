@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { Eye, Download, Trash2, Globe, Lock } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface Model {
     id: string;
@@ -47,12 +50,12 @@ export default function ModelGallery({ models, onDelete, onTogglePublic }: Model
 
     if (models.length === 0) {
         return (
-            <div className="text-center py-16">
-                <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Eye className="w-10 h-10 text-gray-600" />
+            <div className="text-center py-12 md:py-16">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Eye className="w-8 h-8 md:w-10 md:h-10 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-400">No models yet</h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <h3 className="text-lg font-medium text-muted-foreground">No models yet</h3>
+                <p className="text-sm text-muted-foreground/60 mt-1">
                     Upload a 2D image to generate your first 3D model
                 </p>
             </div>
@@ -60,14 +63,14 @@ export default function ModelGallery({ models, onDelete, onTogglePublic }: Model
     }
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {models.map((model) => (
-                <div
+                <Card
                     key={model.id}
-                    className="group bg-gray-800 rounded-xl overflow-hidden border border-gray-700 hover:border-gray-600 transition"
+                    className="group overflow-hidden hover:border-muted-foreground transition"
                 >
                     {/* Thumbnail */}
-                    <div className="relative aspect-square bg-gray-900">
+                    <div className="relative aspect-square bg-background">
                         {model.thumbnailUrl ? (
                             <img
                                 src={model.thumbnailUrl}
@@ -75,35 +78,32 @@ export default function ModelGallery({ models, onDelete, onTogglePublic }: Model
                                 className="w-full h-full object-cover"
                             />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-600">
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                                 <Eye size={48} />
                             </div>
                         )}
 
                         {/* Hover overlay */}
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3">
-                            <Link
-                                href={`/viewer/${model.id}`}
-                                className="p-3 bg-brand-600 hover:bg-brand-500 rounded-full text-white transition"
-                            >
-                                <Eye size={20} />
-                            </Link>
-                            <a
-                                href={model.modelUrl}
-                                download
-                                className="p-3 bg-gray-700 hover:bg-gray-600 rounded-full text-white transition"
-                            >
-                                <Download size={20} />
-                            </a>
+                            <Button asChild size="icon" variant="brand" className="rounded-full">
+                                <Link href={`/viewer/${model.id}`}>
+                                    <Eye size={20} />
+                                </Link>
+                            </Button>
+                            <Button asChild size="icon" variant="secondary" className="rounded-full">
+                                <a href={model.modelUrl} download>
+                                    <Download size={20} />
+                                </a>
+                            </Button>
                         </div>
                     </div>
 
                     {/* Info */}
-                    <div className="p-4">
+                    <div className="p-3 md:p-4">
                         <div className="flex items-start justify-between">
                             <div className="min-w-0">
-                                <h3 className="font-medium text-white truncate">{model.name}</h3>
-                                <p className="text-xs text-gray-500 mt-1">
+                                <h3 className="font-medium text-foreground truncate">{model.name}</h3>
+                                <p className="text-xs text-muted-foreground mt-1">
                                     {formatBytes(model.fileSizeBytes)} &middot; {model.format.toUpperCase()} &middot; {timeAgo(model.createdAt)}
                                 </p>
                             </div>
@@ -112,11 +112,12 @@ export default function ModelGallery({ models, onDelete, onTogglePublic }: Model
                         <div className="flex items-center gap-2 mt-3">
                             <button
                                 onClick={() => onTogglePublic?.(model.id, !model.isPublic)}
-                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition ${
+                                className={cn(
+                                    'flex items-center gap-1 px-2 py-1 rounded text-xs transition',
                                     model.isPublic
                                         ? 'bg-green-500/10 text-green-400'
-                                        : 'bg-gray-700 text-gray-400'
-                                }`}
+                                        : 'bg-muted text-muted-foreground'
+                                )}
                             >
                                 {model.isPublic ? <Globe size={12} /> : <Lock size={12} />}
                                 {model.isPublic ? 'Public' : 'Private'}
@@ -127,13 +128,13 @@ export default function ModelGallery({ models, onDelete, onTogglePublic }: Model
                             <button
                                 onClick={() => handleDelete(model.id)}
                                 disabled={deletingId === model.id}
-                                className="p-1 text-gray-500 hover:text-red-400 transition"
+                                className="p-1 text-muted-foreground hover:text-destructive transition"
                             >
                                 <Trash2 size={14} />
                             </button>
                         </div>
                     </div>
-                </div>
+                </Card>
             ))}
         </div>
     );

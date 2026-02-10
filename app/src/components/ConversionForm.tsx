@@ -2,6 +2,12 @@
 
 import { useState } from 'react';
 import { Sparkles, Settings2, Zap, Crown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue, SelectGroup, SelectLabel as SelectGroupLabel } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 interface ConversionFormProps {
     onSubmit: (options: ConversionOptions) => void;
@@ -23,7 +29,6 @@ const AI_ENGINES = [
         badge: 'fal.ai',
         description: 'Production-ready 3D with PBR textures. Multi-format export.',
         icon: Crown,
-        color: 'brand',
         speed: 'Medium',
         quality: 'Highest',
         formats: ['glb', 'gltf', 'obj', 'fbx']
@@ -34,7 +39,6 @@ const AI_ENGINES = [
         badge: 'Segmind',
         description: 'Multiview reconstruction. Instant results, no queue wait.',
         icon: Zap,
-        color: 'purple',
         speed: 'Fast',
         quality: 'High',
         formats: ['glb']
@@ -46,7 +50,7 @@ export default function ConversionForm({ onSubmit, loading = false, plan = 'FREE
     const [quality, setQuality] = useState('standard');
     const [format, setFormat] = useState('glb');
     const [textured, setTextured] = useState(true);
-    const [selectedEngine, setSelectedEngine] = useState(0); // 0 = Meshy, 1 = Hunyuan
+    const [selectedEngine, setSelectedEngine] = useState(0);
     const [customProvider, setCustomProvider] = useState('');
 
     const activeEngine = AI_ENGINES[selectedEngine];
@@ -67,69 +71,42 @@ export default function ConversionForm({ onSubmit, loading = false, plan = 'FREE
 
     return (
         <div className="space-y-6">
-            {/* ─── AI Engine Toggle ─── */}
+            {/* AI Engine Toggle */}
             <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">AI Engine</label>
-                <div className="grid grid-cols-2 gap-3">
+                <Label className="mb-3 block">AI Engine</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {AI_ENGINES.map((engine, idx) => {
                         const Icon = engine.icon;
                         const isActive = selectedEngine === idx && !customProvider;
-                        const colorMap: Record<string, { border: string; bg: string; badge: string }> = {
-                            brand: {
-                                border: 'border-brand-500',
-                                bg: 'bg-brand-500/10',
-                                badge: 'bg-brand-500/20 text-brand-300'
-                            },
-                            purple: {
-                                border: 'border-purple-500',
-                                bg: 'bg-purple-500/10',
-                                badge: 'bg-purple-500/20 text-purple-300'
-                            }
-                        };
-                        const colors = colorMap[engine.color];
-
                         return (
                             <button
                                 key={engine.id}
                                 onClick={() => {
                                     setSelectedEngine(idx);
                                     setCustomProvider('');
-                                    // Auto-switch format if engine doesn't support current
-                                    if (!engine.formats.includes(format)) {
-                                        setFormat('glb');
-                                    }
+                                    if (!engine.formats.includes(format)) setFormat('glb');
                                 }}
-                                className={`relative p-4 rounded-xl text-left border-2 transition ${
+                                className={cn(
+                                    'relative p-4 rounded-lg text-left border-2 transition',
                                     isActive
-                                        ? `${colors.border} ${colors.bg}`
-                                        : 'border-gray-700 hover:border-gray-600 bg-gray-800/50'
-                                }`}
-                            >
-                                {/* Active indicator */}
-                                {isActive && (
-                                    <div className={`absolute top-3 right-3 w-2.5 h-2.5 rounded-full ${
-                                        engine.color === 'brand' ? 'bg-brand-400' : 'bg-purple-400'
-                                    } animate-pulse`} />
+                                        ? 'border-primary bg-primary/10'
+                                        : 'border-border hover:border-muted-foreground bg-card/50'
                                 )}
-
+                            >
+                                {isActive && (
+                                    <div className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
+                                )}
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon size={18} className={isActive
-                                        ? (engine.color === 'brand' ? 'text-brand-400' : 'text-purple-400')
-                                        : 'text-gray-400'
-                                    } />
-                                    <span className="font-semibold text-white">{engine.name}</span>
-                                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-                                        isActive ? colors.badge : 'bg-gray-700 text-gray-400'
-                                    }`}>
+                                    <Icon size={18} className={isActive ? 'text-primary' : 'text-muted-foreground'} />
+                                    <span className="font-semibold text-foreground">{engine.name}</span>
+                                    <Badge variant={isActive ? 'brand' : 'secondary'} className="text-[10px] px-1.5">
                                         {engine.badge}
-                                    </span>
+                                    </Badge>
                                 </div>
-
-                                <p className="text-xs text-gray-400 mb-3">{engine.description}</p>
-
+                                <p className="text-xs text-muted-foreground mb-3">{engine.description}</p>
                                 <div className="flex gap-3 text-[11px]">
-                                    <span className="text-gray-500">Speed: <span className="text-gray-300">{engine.speed}</span></span>
-                                    <span className="text-gray-500">Quality: <span className="text-gray-300">{engine.quality}</span></span>
+                                    <span className="text-muted-foreground">Speed: <span className="text-foreground">{engine.speed}</span></span>
+                                    <span className="text-muted-foreground">Quality: <span className="text-foreground">{engine.quality}</span></span>
                                 </div>
                             </button>
                         );
@@ -137,10 +114,10 @@ export default function ConversionForm({ onSubmit, loading = false, plan = 'FREE
                 </div>
             </div>
 
-            {/* ─── Quality ─── */}
+            {/* Quality */}
             <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">Quality</label>
-                <div className="grid grid-cols-3 gap-3">
+                <Label className="mb-3 block">Quality</Label>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     {qualityOptions.map((opt) => {
                         const available = opt.plans.includes(plan);
                         return (
@@ -148,18 +125,19 @@ export default function ConversionForm({ onSubmit, loading = false, plan = 'FREE
                                 key={opt.value}
                                 onClick={() => available && setQuality(opt.value)}
                                 disabled={!available}
-                                className={`p-3 rounded-xl text-left border transition ${
+                                className={cn(
+                                    'p-3 rounded-lg text-left border transition',
                                     quality === opt.value
-                                        ? 'border-brand-500 bg-brand-500/10'
+                                        ? 'border-primary bg-primary/10'
                                         : available
-                                            ? 'border-gray-700 hover:border-gray-600 bg-gray-800/50'
-                                            : 'border-gray-800 bg-gray-800/20 opacity-40 cursor-not-allowed'
-                                }`}
+                                            ? 'border-border hover:border-muted-foreground bg-card/50'
+                                            : 'border-border bg-card/20 opacity-40 cursor-not-allowed'
+                                )}
                             >
-                                <div className="text-sm font-medium text-white">{opt.label}</div>
-                                <div className="text-xs text-gray-400 mt-1">{opt.desc}</div>
+                                <div className="text-sm font-medium text-foreground">{opt.label}</div>
+                                <div className="text-xs text-muted-foreground mt-1 hidden sm:block">{opt.desc}</div>
                                 {!available && (
-                                    <div className="text-xs text-brand-400 mt-1">Upgrade required</div>
+                                    <div className="text-xs text-primary mt-1">Upgrade</div>
                                 )}
                             </button>
                         );
@@ -167,10 +145,10 @@ export default function ConversionForm({ onSubmit, loading = false, plan = 'FREE
                 </div>
             </div>
 
-            {/* ─── Format ─── */}
+            {/* Format */}
             <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">Output Format</label>
-                <div className="grid grid-cols-4 gap-3">
+                <Label className="mb-3 block">Output Format</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                     {formatOptions.map((opt) => {
                         const planAvailable = opt.plans.includes(plan);
                         const engineSupports = activeEngine.formats.includes(opt.value);
@@ -180,20 +158,19 @@ export default function ConversionForm({ onSubmit, loading = false, plan = 'FREE
                                 key={opt.value}
                                 onClick={() => available && setFormat(opt.value)}
                                 disabled={!available}
-                                className={`p-3 rounded-xl text-center border transition ${
+                                className={cn(
+                                    'p-3 rounded-lg text-center border transition',
                                     format === opt.value
-                                        ? 'border-brand-500 bg-brand-500/10'
+                                        ? 'border-primary bg-primary/10'
                                         : available
-                                            ? 'border-gray-700 hover:border-gray-600 bg-gray-800/50'
-                                            : 'border-gray-800 bg-gray-800/20 opacity-40 cursor-not-allowed'
-                                }`}
-                            >
-                                <div className="text-sm font-bold text-white">{opt.label}</div>
-                                {!planAvailable && (
-                                    <div className="text-xs text-brand-400 mt-1">Upgrade</div>
+                                            ? 'border-border hover:border-muted-foreground bg-card/50'
+                                            : 'border-border bg-card/20 opacity-40 cursor-not-allowed'
                                 )}
+                            >
+                                <div className="text-sm font-bold text-foreground">{opt.label}</div>
+                                {!planAvailable && <div className="text-xs text-primary mt-1">Upgrade</div>}
                                 {planAvailable && !engineSupports && !customProvider && (
-                                    <div className="text-xs text-gray-500 mt-1">Switch engine</div>
+                                    <div className="text-xs text-muted-foreground mt-1">Switch engine</div>
                                 )}
                             </button>
                         );
@@ -201,51 +178,54 @@ export default function ConversionForm({ onSubmit, loading = false, plan = 'FREE
                 </div>
             </div>
 
-            {/* ─── Advanced Options ─── */}
+            {/* Advanced Options */}
             <button
                 onClick={() => setShowAdvanced(!showAdvanced)}
-                className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition"
             >
                 <Settings2 size={16} />
                 Advanced Options
             </button>
 
             {showAdvanced && (
-                <div className="space-y-4 p-4 bg-gray-800/50 rounded-xl border border-gray-700">
-                    <label className="flex items-center gap-3">
-                        <input
-                            type="checkbox"
+                <div className="space-y-4 p-4 bg-card/50 rounded-lg border border-border">
+                    <div className="flex items-center gap-3">
+                        <Switch
+                            id="textured"
                             checked={textured}
-                            onChange={(e) => setTextured(e.target.checked)}
-                            className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-brand-500 focus:ring-brand-500"
+                            onCheckedChange={setTextured}
                         />
-                        <span className="text-sm text-gray-300">Generate textures (PBR materials)</span>
-                    </label>
+                        <Label htmlFor="textured">Generate textures (PBR materials)</Label>
+                    </div>
 
                     <div>
-                        <label className="block text-sm text-gray-400 mb-2">Override AI Provider</label>
-                        <select
-                            value={customProvider}
-                            onChange={(e) => setCustomProvider(e.target.value)}
-                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500"
-                        >
-                            <option value="">Use selected engine above</option>
-                            <optgroup label="fal.ai">
-                                <option value="fal-meshy-v6">fal.ai Meshy v6</option>
-                                <option value="fal-triposr">fal.ai TripoSR</option>
-                                <option value="fal-hunyuan-3d">fal.ai Hunyuan 3D</option>
-                            </optgroup>
-                            <optgroup label="Segmind">
-                                <option value="segmind-hunyuan3d">Segmind Hunyuan3D-2mv</option>
-                            </optgroup>
-                            <optgroup label="Direct APIs">
-                                <option value="meshy">Meshy AI (Direct)</option>
-                                <option value="triposr">TripoSR (Stability AI)</option>
-                                <option value="openai">OpenAI Shap-E</option>
-                            </optgroup>
-                        </select>
-                        {customProvider && (
-                            <p className="text-xs text-yellow-400 mt-1">
+                        <Label className="mb-2 block">Override AI Provider</Label>
+                        <Select value={customProvider} onValueChange={setCustomProvider}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Use selected engine above" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value=" ">Use selected engine above</SelectItem>
+                                <SelectGroup>
+                                    <SelectGroupLabel>fal.ai</SelectGroupLabel>
+                                    <SelectItem value="fal-meshy-v6">fal.ai Meshy v6</SelectItem>
+                                    <SelectItem value="fal-triposr">fal.ai TripoSR</SelectItem>
+                                    <SelectItem value="fal-hunyuan-3d">fal.ai Hunyuan 3D</SelectItem>
+                                </SelectGroup>
+                                <SelectGroup>
+                                    <SelectGroupLabel>Segmind</SelectGroupLabel>
+                                    <SelectItem value="segmind-hunyuan3d">Segmind Hunyuan3D-2mv</SelectItem>
+                                </SelectGroup>
+                                <SelectGroup>
+                                    <SelectGroupLabel>Direct APIs</SelectGroupLabel>
+                                    <SelectItem value="meshy">Meshy AI (Direct)</SelectItem>
+                                    <SelectItem value="triposr">TripoSR (Stability AI)</SelectItem>
+                                    <SelectItem value="openai">OpenAI Shap-E</SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        {customProvider && customProvider !== ' ' && (
+                            <p className="text-xs text-yellow-500 mt-1">
                                 Overriding engine selection. Clear to use toggle above.
                             </p>
                         )}
@@ -253,28 +233,26 @@ export default function ConversionForm({ onSubmit, loading = false, plan = 'FREE
                 </div>
             )}
 
-            {/* ─── Submit ─── */}
-            <button
-                onClick={() => onSubmit({ quality, format, textured, aiProvider })}
+            {/* Submit */}
+            <Button
+                onClick={() => onSubmit({ quality, format, textured, aiProvider: customProvider?.trim() || aiProvider })}
                 disabled={loading}
-                className={`w-full py-4 rounded-xl font-semibold text-white transition flex items-center justify-center gap-2 ${
-                    loading
-                        ? 'bg-brand-700 cursor-wait'
-                        : 'bg-brand-600 hover:bg-brand-500'
-                }`}
+                variant="brand"
+                size="lg"
+                className="w-full py-4 text-base"
             >
                 {loading ? (
                     <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <div className="w-5 h-5 border-2 border-brand-foreground border-t-transparent rounded-full animate-spin mr-2" />
                         Starting conversion...
                     </>
                 ) : (
                     <>
-                        <Sparkles size={20} />
-                        Convert to 3D with {customProvider ? 'Custom Provider' : activeEngine.name}
+                        <Sparkles size={20} className="mr-2" />
+                        Convert to 3D with {customProvider && customProvider !== ' ' ? 'Custom Provider' : activeEngine.name}
                     </>
                 )}
-            </button>
+            </Button>
         </div>
     );
 }

@@ -10,6 +10,8 @@ import JobStatus from '@/components/JobStatus';
 import ModelGallery from '@/components/ModelGallery';
 import { useJobPolling } from '@/hooks/useJobPolling';
 import { PLANS } from '@/types';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import type { Plan } from '@prisma/client';
 
 export default function DashboardPage() {
@@ -26,7 +28,6 @@ export default function DashboardPage() {
     const userPlan = (session?.user as any)?.plan || 'FREE';
     const planConfig = PLANS[userPlan as Plan];
 
-    // Redirect to login
     if (status === 'unauthenticated') {
         redirect('/api/auth/signin');
     }
@@ -51,7 +52,6 @@ export default function DashboardPage() {
         if (session) fetchModels();
     }, [session, fetchModels]);
 
-    // Refresh models when a job completes
     useEffect(() => {
         if (activeJob?.status === 'COMPLETED') {
             fetchModels();
@@ -68,7 +68,6 @@ export default function DashboardPage() {
 
         setConverting(true);
         try {
-            // 1. Start conversion (get upload URL + job ID)
             const res = await fetch('/api/convert', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -88,14 +87,12 @@ export default function DashboardPage() {
 
             const { jobId, uploadUrl } = await res.json();
 
-            // 2. Upload the image to S3
             await fetch(uploadUrl, {
                 method: 'PUT',
                 body: selectedFile,
                 headers: { 'Content-Type': selectedFile.type }
             });
 
-            // 3. Start polling the job
             setActiveJobId(jobId);
         } catch (err) {
             alert('Something went wrong. Please try again.');
@@ -125,22 +122,22 @@ export default function DashboardPage() {
     if (status === 'loading') {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
             {/* Header stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
                 <StatCard
                     icon={<Zap className="w-5 h-5 text-yellow-400" />}
                     label="Plan"
                     value={planConfig.name}
                 />
                 <StatCard
-                    icon={<BarChart3 className="w-5 h-5 text-brand-400" />}
+                    icon={<BarChart3 className="w-5 h-5 text-primary" />}
                     label="Conversions this month"
                     value={`-- / ${planConfig.monthlyConversions}`}
                 />
@@ -152,10 +149,10 @@ export default function DashboardPage() {
             </div>
 
             {/* Main content */}
-            <div className="grid lg:grid-cols-2 gap-8 mb-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-8 sm:mb-12">
                 {/* Left: Upload & options */}
                 <div className="space-y-6">
-                    <h2 className="text-2xl font-bold">New Conversion</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold">New Conversion</h2>
                     <UploadZone
                         onFileSelected={handleFileSelected}
                         maxSizeMB={planConfig.maxFileSize}
@@ -171,7 +168,7 @@ export default function DashboardPage() {
 
                 {/* Right: Active job status */}
                 <div className="space-y-6">
-                    <h2 className="text-2xl font-bold">Status</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold">Status</h2>
                     {activeJob ? (
                         <JobStatus
                             status={activeJob.status}
@@ -179,11 +176,11 @@ export default function DashboardPage() {
                             errorMessage={activeJob.errorMessage}
                         />
                     ) : (
-                        <div className="p-8 bg-gray-800/30 rounded-xl border border-gray-800 text-center">
-                            <p className="text-gray-500">
+                        <Card className="p-6 md:p-8 text-center">
+                            <p className="text-muted-foreground">
                                 Upload an image and start a conversion to see progress here
                             </p>
-                        </div>
+                        </Card>
                     )}
 
                     {/* Recent jobs */}
@@ -194,19 +191,18 @@ export default function DashboardPage() {
                                 {jobs.slice(0, 5).map((job: any) => (
                                     <div
                                         key={job.id}
-                                        className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg text-sm"
+                                        className="flex items-center justify-between p-3 bg-card rounded-lg border border-border text-sm"
                                     >
-                                        <span className="text-gray-300 truncate">
+                                        <span className="text-foreground/80 truncate mr-3">
                                             {job.inputFileName}
                                         </span>
-                                        <span className={`px-2 py-0.5 rounded text-xs ${
-                                            job.status === 'COMPLETED' ? 'bg-green-500/10 text-green-400' :
-                                                job.status === 'FAILED' ? 'bg-red-500/10 text-red-400' :
-                                                    job.status === 'PROCESSING' ? 'bg-brand-500/10 text-brand-400' :
-                                                        'bg-yellow-500/10 text-yellow-400'
-                                        }`}>
+                                        <Badge variant={
+                                            job.status === 'COMPLETED' ? 'default' :
+                                                job.status === 'FAILED' ? 'destructive' :
+                                                    'secondary'
+                                        } className="shrink-0 text-xs">
                                             {job.status}
-                                        </span>
+                                        </Badge>
                                     </div>
                                 ))}
                             </div>
@@ -217,7 +213,7 @@ export default function DashboardPage() {
 
             {/* Model gallery */}
             <div>
-                <h2 className="text-2xl font-bold mb-6">Your 3D Models</h2>
+                <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Your 3D Models</h2>
                 <ModelGallery
                     models={models}
                     onDelete={handleDeleteModel}
@@ -230,12 +226,12 @@ export default function DashboardPage() {
 
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
     return (
-        <div className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-xl border border-gray-700">
-            <div className="p-2 bg-gray-700 rounded-lg">{icon}</div>
+        <Card className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
+            <div className="p-2 bg-muted rounded-lg">{icon}</div>
             <div>
-                <p className="text-xs text-gray-400">{label}</p>
-                <p className="text-lg font-semibold">{value}</p>
+                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className="text-base sm:text-lg font-semibold">{value}</p>
             </div>
-        </div>
+        </Card>
     );
 }
