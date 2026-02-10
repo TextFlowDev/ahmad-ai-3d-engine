@@ -4,6 +4,7 @@ import { TripoSRProvider } from './triposr';
 import { OpenAIProvider } from './stability';
 import { KieAIProvider } from './kie';
 import { FalAIProvider, FalTripoSRProvider, FalMeshyV6Provider, FalHunyuan3DProvider } from './fal';
+import { SegmindHunyuan3DProvider } from './segmind';
 
 export { AIProvider } from './base';
 export { MeshyProvider } from './meshy';
@@ -11,6 +12,7 @@ export { TripoSRProvider } from './triposr';
 export { OpenAIProvider } from './stability';
 export { KieAIProvider } from './kie';
 export { FalAIProvider, FalTripoSRProvider, FalMeshyV6Provider, FalHunyuan3DProvider } from './fal';
+export { SegmindHunyuan3DProvider } from './segmind';
 
 const providers: Record<string, () => AIProvider> = {
     // Direct providers
@@ -23,7 +25,10 @@ const providers: Record<string, () => AIProvider> = {
     'fal': () => new FalAIProvider(),
     'fal-triposr': () => new FalTripoSRProvider(),
     'fal-meshy-v6': () => new FalMeshyV6Provider(),
-    'fal-hunyuan-3d': () => new FalHunyuan3DProvider()
+    'fal-hunyuan-3d': () => new FalHunyuan3DProvider(),
+
+    // Segmind providers
+    'segmind-hunyuan3d': () => new SegmindHunyuan3DProvider()
 };
 
 /**
