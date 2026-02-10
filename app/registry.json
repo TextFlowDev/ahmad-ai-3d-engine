@@ -1,0 +1,185 @@
+{
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "renderforge",
+    "homepage": "https://renderforge.app",
+    "items": [
+        {
+            "name": "button",
+            "type": "registry:component",
+            "title": "Button",
+            "description": "RenderForge button with brand, primary, secondary, outline, ghost, destructive, and link variants.",
+            "files": [
+                {
+                    "path": "registry/renderforge/button.tsx",
+                    "type": "registry:component"
+                }
+            ],
+            "registryDependencies": [],
+            "dependencies": [
+                "@radix-ui/react-slot",
+                "class-variance-authority"
+            ]
+        },
+        {
+            "name": "card",
+            "type": "registry:component",
+            "title": "Card",
+            "description": "RenderForge card with header, title, description, content, and footer sub-components.",
+            "files": [
+                {
+                    "path": "registry/renderforge/card.tsx",
+                    "type": "registry:component"
+                }
+            ]
+        },
+        {
+            "name": "badge",
+            "type": "registry:component",
+            "title": "Badge",
+            "description": "RenderForge badge with default, brand, secondary, destructive, and outline variants.",
+            "files": [
+                {
+                    "path": "registry/renderforge/badge.tsx",
+                    "type": "registry:component"
+                }
+            ],
+            "dependencies": [
+                "class-variance-authority"
+            ]
+        },
+        {
+            "name": "input",
+            "type": "registry:component",
+            "title": "Input",
+            "description": "RenderForge text input with focus ring and border styling.",
+            "files": [
+                {
+                    "path": "registry/renderforge/input.tsx",
+                    "type": "registry:component"
+                }
+            ]
+        },
+        {
+            "name": "select",
+            "type": "registry:component",
+            "title": "Select",
+            "description": "RenderForge select dropdown built on Radix UI Select.",
+            "files": [
+                {
+                    "path": "registry/renderforge/select.tsx",
+                    "type": "registry:component"
+                }
+            ],
+            "dependencies": [
+                "@radix-ui/react-select"
+            ]
+        },
+        {
+            "name": "upload-zone",
+            "type": "registry:block",
+            "title": "Upload Zone",
+            "description": "Drag-and-drop file upload zone for 2D images (raster, vector, drawing) with preview.",
+            "files": [
+                {
+                    "path": "registry/renderforge/upload-zone.tsx",
+                    "type": "registry:component"
+                }
+            ],
+            "dependencies": [
+                "react-dropzone",
+                "lucide-react"
+            ],
+            "registryDependencies": []
+        },
+        {
+            "name": "conversion-form",
+            "type": "registry:block",
+            "title": "Conversion Form",
+            "description": "AI engine selector with quality, format, and advanced provider options for 2D-to-3D conversion.",
+            "files": [
+                {
+                    "path": "registry/renderforge/conversion-form.tsx",
+                    "type": "registry:component"
+                }
+            ],
+            "dependencies": [
+                "lucide-react"
+            ],
+            "registryDependencies": [
+                "button",
+                "badge",
+                "label",
+                "switch",
+                "select"
+            ]
+        },
+        {
+            "name": "pricing-card",
+            "type": "registry:block",
+            "title": "Pricing Card",
+            "description": "Subscription pricing card with features list, popular badge, and plan-aware CTA button.",
+            "files": [
+                {
+                    "path": "registry/renderforge/pricing-card.tsx",
+                    "type": "registry:component"
+                }
+            ],
+            "dependencies": [
+                "lucide-react"
+            ],
+            "registryDependencies": [
+                "button",
+                "card",
+                "badge"
+            ]
+        },
+        {
+            "name": "model-gallery",
+            "type": "registry:block",
+            "title": "Model Gallery",
+            "description": "Grid gallery of 3D models with thumbnails, hover actions (view/download), visibility toggle, and delete.",
+            "files": [
+                {
+                    "path": "registry/renderforge/model-gallery.tsx",
+                    "type": "registry:component"
+                }
+            ],
+            "dependencies": [
+                "lucide-react"
+            ],
+            "registryDependencies": [
+                "button",
+                "card"
+            ]
+        },
+        {
+            "name": "renderforge-theme",
+            "type": "registry:style",
+            "title": "RenderForge Theme",
+            "description": "Dark theme with blue-violet brand color for the RenderForge 2D-to-3D SaaS application.",
+            "cssVars": {
+                "dark": {
+                    "background": "240 10% 3.9%",
+                    "foreground": "0 0% 98%",
+                    "card": "240 10% 5.5%",
+                    "card-foreground": "0 0% 98%",
+                    "popover": "240 10% 5.5%",
+                    "popover-foreground": "0 0% 98%",
+                    "primary": "227 71% 63%",
+                    "primary-foreground": "0 0% 100%",
+                    "secondary": "240 5% 15%",
+                    "secondary-foreground": "0 0% 98%",
+                    "muted": "240 5% 15%",
+                    "muted-foreground": "240 5% 64%",
+                    "accent": "240 5% 15%",
+                    "accent-foreground": "0 0% 98%",
+                    "destructive": "0 84% 60%",
+                    "destructive-foreground": "0 0% 98%",
+                    "border": "240 6% 17%",
+                    "input": "240 6% 17%",
+                    "ring": "227 71% 63%"
+                }
+            }
+        }
+    ]
+}

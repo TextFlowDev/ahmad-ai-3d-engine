@@ -12,7 +12,8 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "worker": "tsx src/workers/conversion-worker.ts"
+    "worker": "tsx src/workers/conversion-worker.ts",
+    "registry:build": "shadcn build"
   },
   "dependencies": {
     "next": "^14.2.0",
