@@ -1,0 +1,69 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#1a1a2e', 'lineColor': '#6c63ff' } } }%%
+
+sequenceDiagram
+    autonumber
+    participant U as User (Dashboard)
+    participant API as API Gateway
+    participant B as Agent Brain
+    participant TR as Task Router
+    participant WP as Workflow Planner
+    participant DE as Decision Engine
+    participant WE as Wave Executor
+    participant AG as Agent Pool
+    participant RAG as Dual RAG
+    participant EXT as External Providers
+    participant MEM as Memory + Learning
+    participant DB as Supabase / Redis
+
+    U->>API: POST /api/v1/campaign/create
+    API->>B: Parse intent + validate
+
+    rect rgb(108, 99, 255, 0.1)
+        Note over B,WE: BRAIN ORCHESTRATION
+        B->>TR: Route task (priority, type, agent affinity)
+        TR->>WP: Build execution DAG
+        WP->>WP: Resolve dependencies
+        WP->>DE: Score candidate strategies
+        DE->>DE: Evaluate paths (cost, latency, quality)
+        DE->>WE: Dispatch execution waves
+    end
+
+    rect rgb(0, 184, 148, 0.1)
+        Note over WE,AG: PARALLEL AGENT EXECUTION
+        WE->>AG: Wave 1: Strategist + Analytics (parallel)
+        AG->>RAG: Retrieve brand context
+        RAG-->>AG: Injected context
+        AG->>EXT: Strategist → OpenAI (GPT-4)
+        AG->>EXT: Analytics → GA4 + GSC
+        EXT-->>AG: Strategy plan + performance data
+        AG-->>WE: Wave 1 complete
+
+        WE->>AG: Wave 2: SEO + Content (parallel, depends on Wave 1)
+        AG->>RAG: Retrieve internal playbooks
+        RAG-->>AG: Injected knowledge
+        AG->>EXT: SEO → DataForSEO + SerpAPI
+        AG->>EXT: Content → OpenAI (GPT-4)
+        EXT-->>AG: Keywords + generated content
+        AG-->>WE: Wave 2 complete
+
+        WE->>AG: Wave 3: Social + Email + Ads (parallel, depends on Wave 2)
+        AG->>EXT: Social → Meta + LinkedIn
+        AG->>EXT: Email → Brevo
+        AG->>EXT: Ads → Google Ads
+        EXT-->>AG: Distribution confirmations
+        AG-->>WE: Wave 3 complete
+    end
+
+    rect rgb(253, 203, 110, 0.1)
+        Note over WE,MEM: LEARNING LOOP
+        WE->>MEM: Log execution results
+        MEM->>MEM: Score agent performance
+        MEM->>MEM: Update decision weights
+        MEM->>DB: Persist learnings (long-term)
+        MEM->>DB: Cache hot data (Redis)
+    end
+
+    WE-->>B: Execution complete
+    B-->>API: Campaign result payload
+    API-->>U: 200 OK + campaign summary
+    Note over U: Real-time updates via WebSocket during execution

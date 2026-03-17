@@ -1,0 +1,155 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#1a1a2e', 'lineColor': '#fd79a8' } } }%%
+
+graph TB
+    subgraph INGESTION["DOCUMENT INGESTION"]
+        direction TB
+        subgraph INTERNAL_SRC["Internal Knowledge Sources"]
+            MP["Marketing Playbooks"]
+            BP["Best Practice Guides"]
+            CT["Campaign Templates"]
+            IP["Industry Patterns"]
+        end
+        subgraph BRAND_SRC["User Brand Sources"]
+            BG["Brand Guidelines"]
+            VA["Voice & Tone Docs"]
+            PA["Past Campaign Assets"]
+            CP["Competitor Profiles"]
+            PP["Product/Service Pages"]
+        end
+    end
+
+    subgraph PROCESSING["CHUNKING + EMBEDDING PIPELINE"]
+        direction TB
+        subgraph CHUNKER["Document Chunker"]
+            PARSE["Parse Documents<br/>(PDF, DOCX, HTML, MD)"]
+            SPLIT["Recursive Text Splitter<br/>(512 tokens, 50 overlap)"]
+            META["Attach Metadata<br/>(source, type, brand_id, timestamp)"]
+        end
+        subgraph EMBEDDER["Embedding Engine"]
+            EMBED["OpenAI text-embedding-ada-002<br/>(1536 dimensions)"]
+            BATCH["Batch Processor<br/>(rate-limited, retry-aware)"]
+        end
+    end
+
+    subgraph STORAGE["VECTOR STORAGE (Supabase pgvector)"]
+        direction LR
+        subgraph INTERNAL_VS["Internal Vector Store"]
+            IVS_TABLE["internal_knowledge_embeddings<br/>┌─────────────────────┐<br/>│ id (uuid)           │<br/>│ content (text)      │<br/>│ embedding (vector)  │<br/>│ metadata (jsonb)    │<br/>│ category (text)     │<br/>│ created_at          │<br/>└─────────────────────┘"]
+        end
+        subgraph BRAND_VS["Brand Vector Store"]
+            BVS_TABLE["brand_knowledge_embeddings<br/>┌─────────────────────┐<br/>│ id (uuid)           │<br/>│ brand_id (uuid)     │<br/>│ content (text)      │<br/>│ embedding (vector)  │<br/>│ metadata (jsonb)    │<br/>│ doc_type (text)     │<br/>│ created_at          │<br/>└─────────────────────┘"]
+        end
+    end
+
+    subgraph RETRIEVAL["RETRIEVAL ENGINE"]
+        direction TB
+        QE["Query Embedding<br/>(embed agent's question)"]
+        SIM["Similarity Search<br/>(cosine distance, top-k=5)"]
+        RERANK["Re-Ranker<br/>(relevance scoring + filtering)"]
+        MERGE["Context Merger<br/>(internal + brand contexts)"]
+    end
+
+    subgraph INJECTION["CONTEXT INJECTION"]
+        direction TB
+        TEMPLATE["Prompt Template Builder<br/>(system + context + task)"]
+        WINDOW["Context Window Manager<br/>(token budget allocation)"]
+        INJECT["Inject into Agent Prompt"]
+    end
+
+    subgraph AGENT_EXEC["AGENT EXECUTION"]
+        direction LR
+        AGENT["Agent<br/>(Strategist / SEO / Content / etc.)"]
+        LLM["LLM Call<br/>(OpenAI GPT-4)"]
+        OUTPUT["Agent Output<br/>(structured response)"]
+    end
+
+    subgraph LEARNING["LEARNING LOOP"]
+        direction TB
+        FEEDBACK["Execution Feedback<br/>(success/failure + quality score)"]
+        WEIGHT["Update Retrieval Weights<br/>(boost useful chunks)"]
+        PRUNE["Prune Stale Knowledge<br/>(TTL-based expiry)"]
+        INDEX["Re-index Updated Docs<br/>(incremental)"]
+    end
+
+    subgraph MEMORY_SYSTEM["AGENT MEMORY SYSTEM"]
+        direction TB
+        subgraph SHORT_TERM["Short-Term Memory (Redis)"]
+            CONV["Conversation Context<br/>(TTL: 1 hour)"]
+            TASK["Active Task State<br/>(TTL: 24 hours)"]
+            CACHE["RAG Result Cache<br/>(TTL: 15 minutes)"]
+        end
+        subgraph LONG_TERM["Long-Term Memory (Supabase)"]
+            HIST["Execution History<br/>(per brand, per agent)"]
+            PREF["User Preferences<br/>(learned patterns)"]
+            SCORE["Agent Performance Scores<br/>(rolling 30-day)"]
+            DECIDE["Decision Logs<br/>(for audit trail)"]
+        end
+    end
+
+    %% Flow connections
+    INTERNAL_SRC --> PARSE
+    BRAND_SRC --> PARSE
+    PARSE --> SPLIT --> META
+    META --> EMBED --> BATCH
+
+    BATCH -->|"internal docs"| IVS_TABLE
+    BATCH -->|"brand docs"| BVS_TABLE
+
+    AGENT -->|"question"| QE
+    QE --> SIM
+    SIM -->|"search internal"| IVS_TABLE
+    SIM -->|"search brand"| BVS_TABLE
+    IVS_TABLE -.->|"results"| RERANK
+    BVS_TABLE -.->|"results"| RERANK
+    RERANK --> MERGE
+
+    MERGE --> TEMPLATE
+    TEMPLATE --> WINDOW --> INJECT
+
+    INJECT --> AGENT
+    AGENT --> LLM --> OUTPUT
+
+    OUTPUT --> FEEDBACK
+    FEEDBACK --> WEIGHT
+    FEEDBACK --> PRUNE
+    PRUNE --> INDEX
+    INDEX -->|"re-embed"| BATCH
+
+    WEIGHT -->|"update"| SIM
+
+    %% Memory connections
+    AGENT -->|"write"| CONV
+    AGENT -->|"write"| TASK
+    SIM -->|"cache"| CACHE
+    OUTPUT -->|"persist"| HIST
+    FEEDBACK -->|"learn"| PREF
+    FEEDBACK -->|"score"| SCORE
+    OUTPUT -->|"log"| DECIDE
+
+    CONV -->|"read"| AGENT
+    TASK -->|"read"| AGENT
+    CACHE -->|"read"| SIM
+    HIST -->|"inform"| RERANK
+    PREF -->|"inform"| TEMPLATE
+    SCORE -->|"inform"| WEIGHT
+
+    %% Styles
+    classDef source fill:#dfe6e9,stroke:#636e72,color:#2d3436
+    classDef process fill:#a29bfe,stroke:#6c5ce7,color:#fff
+    classDef store fill:#fd79a8,stroke:#e84393,color:#fff
+    classDef retrieve fill:#00b894,stroke:#00a885,color:#fff
+    classDef inject fill:#6c63ff,stroke:#5a52d5,color:#fff
+    classDef agent fill:#0984e3,stroke:#0652DD,color:#fff
+    classDef learn fill:#fdcb6e,stroke:#e17055,color:#333
+    classDef redis fill:#e17055,stroke:#d63031,color:#fff
+    classDef pg fill:#636e72,stroke:#2d3436,color:#fff
+
+    class MP,BP,CT,IP,BG,VA,PA,CP,PP source
+    class PARSE,SPLIT,META,EMBED,BATCH process
+    class IVS_TABLE,BVS_TABLE store
+    class QE,SIM,RERANK,MERGE retrieve
+    class TEMPLATE,WINDOW,INJECT inject
+    class AGENT,LLM,OUTPUT agent
+    class FEEDBACK,WEIGHT,PRUNE,INDEX learn
+    class CONV,TASK,CACHE redis
+    class HIST,PREF,SCORE,DECIDE pg

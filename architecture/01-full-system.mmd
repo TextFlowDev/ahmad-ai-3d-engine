@@ -1,0 +1,151 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#1a1a2e', 'primaryTextColor': '#eee', 'lineColor': '#6c63ff' } } }%%
+
+graph TB
+    subgraph PRESENTATION["PRESENTATION LAYER"]
+        direction LR
+        UI["Dashboard UI<br/>(Next.js / React)"]
+        AUTH["Auth & Session<br/>(Supabase Auth)"]
+        WS["WebSocket<br/>Real-time Updates"]
+    end
+
+    subgraph API_LAYER["API GATEWAY — 195 Routes"]
+        direction LR
+        REST["REST API<br/>/api/v1/*"]
+        WEBHOOK["Webhook Handlers<br/>/api/webhooks/*"]
+        CRON["Cron Endpoints<br/>/api/cron/*"]
+    end
+
+    subgraph BRAIN["AGENT BRAIN — Central Orchestrator"]
+        direction TB
+        ORCH["Orchestrator<br/>(Intent Parsing + Dispatch)"]
+        TR["Task Router<br/>(Priority Queue + Assignment)"]
+        WP["Workflow Planner<br/>(DAG Builder + Dependency Resolution)"]
+        DE["Decision Engine<br/>(Scoring + Selection + Fallback)"]
+        WE["Wave Executor<br/>(Parallel Pipeline Runner)"]
+
+        ORCH --> TR
+        TR --> WP
+        WP --> DE
+        DE --> WE
+    end
+
+    subgraph AGENTS["MULTI-AGENT SYSTEM"]
+        direction LR
+        subgraph STRATEGY["Strategy Layer"]
+            STRAT["Strategist Agent<br/>(Campaign Planning)"]
+            ANALYTICS["Analytics Agent<br/>(Data Interpretation)"]
+        end
+        subgraph CONTENT_GRP["Content Layer"]
+            CONTENT["Content Agent<br/>(Copy Generation)"]
+            SEO["SEO Agent<br/>(Keyword & Ranking)"]
+        end
+        subgraph DISTRIBUTION["Distribution Layer"]
+            SOCIAL["Social Agent<br/>(Multi-platform)"]
+            EMAIL["Email Agent<br/>(Campaigns + Drip)"]
+            ADS["Ads Agent<br/>(PPC Management)"]
+        end
+        subgraph LOCAL["Local Layer"]
+            GEO["Geo Agent<br/>(Local SEO + GMB)"]
+        end
+    end
+
+    subgraph RAG["DUAL RAG SYSTEM"]
+        direction LR
+        subgraph INTERNAL_RAG["Internal Knowledge RAG"]
+            IK_DOCS["Marketing Playbooks<br/>+ Best Practices"]
+            IK_CHUNK["Chunker"]
+            IK_EMBED["Embedding<br/>(OpenAI ada-002)"]
+            IK_VS["Vector Store<br/>(Supabase pgvector)"]
+        end
+        subgraph BRAND_RAG["User Brand Knowledge RAG"]
+            BK_DOCS["Brand Docs<br/>+ Guidelines + Assets"]
+            BK_CHUNK["Chunker"]
+            BK_EMBED["Embedding<br/>(OpenAI ada-002)"]
+            BK_VS["Vector Store<br/>(Supabase pgvector)"]
+        end
+    end
+
+    subgraph MEMORY["AGENT MEMORY + LEARNING"]
+        direction LR
+        STM["Short-Term Memory<br/>(Redis)"]
+        LTM["Long-Term Memory<br/>(Supabase)"]
+        LEARN["Learning Loop<br/>(Feedback → Adjust Weights)"]
+        PERF["Performance Tracker<br/>(Agent Scoring)"]
+
+        STM --> LEARN
+        LTM --> LEARN
+        LEARN --> PERF
+    end
+
+    subgraph INTEGRATIONS["EXTERNAL INTEGRATIONS"]
+        direction LR
+        subgraph AI_PROVIDERS["AI Providers"]
+            OPENAI["OpenAI<br/>(GPT-4 + Embeddings)"]
+        end
+        subgraph SEO_PROVIDERS["SEO Data"]
+            DATAFORSEO["DataForSEO"]
+            SERPAPI["SerpAPI"]
+            SERPER["Serper"]
+        end
+        subgraph GOOGLE["Google Suite"]
+            GADS["Google Ads API"]
+            GA4["Google Analytics 4"]
+            GSC["Google Search Console"]
+        end
+        subgraph SOCIAL_INT["Social Platforms"]
+            META["Meta<br/>(Facebook + Instagram)"]
+            LINKEDIN["LinkedIn"]
+            WHATSAPP["WhatsApp<br/>Business API"]
+        end
+        subgraph EMAIL_INT["Email"]
+            BREVO["Brevo<br/>(Sendinblue)"]
+        end
+    end
+
+    subgraph INFRA["INFRASTRUCTURE"]
+        direction LR
+        SUPA["Supabase<br/>(PostgreSQL + Auth + pgvector)"]
+        REDIS["Redis<br/>(Cache + Queue + Session)"]
+        R2["Cloudflare R2<br/>(Object Storage)"]
+    end
+
+    %% Data Flow
+    UI --> API_LAYER
+    AUTH --> API_LAYER
+    WS -.->|"real-time"| UI
+
+    API_LAYER --> BRAIN
+    BRAIN --> AGENTS
+    AGENTS --> INTEGRATIONS
+
+    AGENTS -->|"retrieve context"| RAG
+    RAG -->|"inject context"| AGENTS
+
+    AGENTS -->|"read/write"| MEMORY
+    MEMORY -->|"feedback"| BRAIN
+
+    BRAIN --> WS
+
+    AGENTS --> INFRA
+    RAG --> INFRA
+    MEMORY --> INFRA
+
+    IK_DOCS --> IK_CHUNK --> IK_EMBED --> IK_VS
+    BK_DOCS --> BK_CHUNK --> BK_EMBED --> BK_VS
+
+    %% Styles
+    classDef brain fill:#6c63ff,stroke:#4a44b5,color:#fff
+    classDef agent fill:#00b894,stroke:#009874,color:#fff
+    classDef rag fill:#fd79a8,stroke:#d63031,color:#fff
+    classDef memory fill:#fdcb6e,stroke:#e17055,color:#333
+    classDef infra fill:#636e72,stroke:#2d3436,color:#fff
+    classDef integration fill:#0984e3,stroke:#0652DD,color:#fff
+    classDef ui fill:#a29bfe,stroke:#6c5ce7,color:#fff
+
+    class ORCH,TR,WP,DE,WE brain
+    class STRAT,ANALYTICS,CONTENT,SEO,SOCIAL,EMAIL,ADS,GEO agent
+    class IK_DOCS,IK_CHUNK,IK_EMBED,IK_VS,BK_DOCS,BK_CHUNK,BK_EMBED,BK_VS rag
+    class STM,LTM,LEARN,PERF memory
+    class SUPA,REDIS,R2 infra
+    class OPENAI,DATAFORSEO,SERPAPI,SERPER,GADS,GA4,GSC,META,LINKEDIN,WHATSAPP,BREVO integration
+    class UI,AUTH,WS ui
